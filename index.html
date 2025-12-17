@@ -18,18 +18,18 @@
             width: 100%;
             z-index: 1000;
             text-align: center;
-            pointer-events: none; /* 下のAR操作を邪魔しない */
-            transition: opacity 0.3s ease; /* 消える時のアニメーション */
+            pointer-events: none;
+            transition: opacity 0.5s ease; /* 消える時のアニメーションを少し滑らかに */
         }
 
         .guide-text {
             display: inline-block;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
             font-size: 14px;
-            backdrop-filter: blur(5px); /* 背景を少しぼかしてiPhone風に */
+            backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -42,7 +42,7 @@
             height: 100%;
             z-index: 999;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent; /* タップ時の青い枠を消す */
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* 非表示状態のクラス */
@@ -61,7 +61,7 @@
 
     <a-scene 
         embedded 
-        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;detectionMode: mono_and_matrix; smooth: true; smoothCount: 10; smoothTolerance: 0.01; smoothThreshold: 5;" 
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; smooth: true; smoothCount: 10; smoothTolerance: 0.01; smoothThreshold: 5;" 
         vr-mode-ui="enabled: false">
         
         <a-assets>
@@ -69,15 +69,14 @@
         </a-assets>
 
         <a-marker type="pattern" url="marker.patt">
-    <a-image 
-        src="#my-image" 
-        width="1"
-        height="1.48"
-        rotation="0 0 0" 
-        position="0 1 0" 
-        scale="3 3 3">
-    </a-image>
-　</a-marker>
+            <a-image 
+                src="#my-image" 
+                rotation="0 0 0" 
+                position="0 1 0" 
+                scale="3 3 3"
+                material="transparent: true; alphaTest: 0.5; side: double;">
+            </a-image>
+        </a-marker>
         
         <a-entity camera></a-entity>
     </a-scene>
@@ -85,19 +84,27 @@
     <script>
         const uiLayer = document.getElementById('ui-layer');
         const tapArea = document.getElementById('tap-area');
-        let isHidden = false;
+        let hideTimeout; // タイマーを管理する変数
 
-        // 画面タップで表示/非表示を切り替え
-        tapArea.addEventListener('click', () => {
-            if (!isHidden) {
-                // UIを隠す
+        // 自動で非表示にする関数
+        function startHideTimer() {
+            // もし以前のタイマーが動いていたらキャンセルする
+            clearTimeout(hideTimeout);
+            
+            // 2秒（2000ミリ秒）後に隠す
+            hideTimeout = setTimeout(() => {
                 uiLayer.classList.add('hide');
-                isHidden = true;
-            } else {
-                // UIを再表示する
-                uiLayer.classList.remove('hide');
-                isHidden = false;
-            }
+            }, 2000);
+        }
+
+        // ページ読み込み時に最初のタイマーを開始
+        window.onload = startHideTimer;
+
+        // 画面タップ時の処理
+        tapArea.addEventListener('click', () => {
+            // 一度表示させてから、再度タイマーを開始する
+            uiLayer.classList.remove('hide');
+            startHideTimer();
         });
     </script>
 </body>
