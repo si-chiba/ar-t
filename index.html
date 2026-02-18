@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スクラッチで遊ぼう！ AR</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+        body { margin: 0; overflow: hidden; font-family: sans-serif; background-color: #000; }
+
+        /* スタート画面：常に一番上に表示 */
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #4c97ff, #3373cc);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; /* 最前面 */
+            color: white; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+
+        .start-button {
+            background-color: #ffab19; color: white; border: none;
+            padding: 18px 45px; font-size: 22px; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 4px 0 #cf8b12;
+        }
+
+        /* 撮影用UI：最初は隠しておく */
+        #ui-layer {
+            position: fixed; top: 30px; left: 0; width: 100%;
+            z-index: 1000; text-align: center; pointer-events: none;
+            display: none; transition: opacity 0.5s;
+        }
+        .guide-text {
+            display: inline-block; background: rgba(0,0,0,0.6); color: white;
+            padding: 12px 24px; border-radius: 50px; font-size: 14px;
+        }
+        .hide { opacity: 0 !important; }
+        
+        /* AR表示エリア */
+        #ar-container { width: 100%; height: 100%; }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen">
+        <h1 style="font-size: 32px;">チーバくんと写真をとろう！</h1>
+        <p style="font-size: 18px; line-height: 1.6;">
+            「スタート！」を押すとカメラが起動します。<br>
+            ブラウザの「許可」ボタンを押してね！
+        </p>
+        <button class="start-button" onclick="startAR()">スタート！</button>
+    </div>
+
+    <div id="ui-layer">
+        <div class="guide-text">撮影はスクリーンショットでお願いします</div>
+    </div>
+
+    <div id="ar-container"></div>
+
+    <script>
+        function startAR() {
+            // スタート画面を非表示にする
+            document.getElementById('start-screen').style.display = 'none';
+            
+            // 案内を表示
+            const uiLayer = document.getElementById('ui-layer');
+            uiLayer.style.display = 'block';
+
+            // ARのHTML要素（a-scene）をここで生成して流し込む
+            // これにより、ボタンを押した瞬間に初めてカメラの許可が求められます
+            const container = document.getElementById('ar-container');
+            container.innerHTML = `
+                <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
+                    <a-assets>
+                        <img id="my-image" src="chiba-kun.png">
+                    </a-assets>
+
+                    <a-marker type="pattern" url="pattern-marker.patt">
+                        <a-image 
+                            src="#my-image" 
+                            width="1" height="1.48"
+                            rotation="-90 0 0" 
+                            position="1.2 0.2 0.5" 
+                            scale="8 8 8"
+                            material="transparent: true; alphaTest: 0.5; side: double;">
+                        </a-image>
+                    </a-marker>
+                    <a-entity camera></a-entity>
+                </a-scene>
+            `;
+
+            // 案内を3秒後に隠す処理
+            setTimeout(() => {
+                uiLayer.classList.add('hide');
+            }, 3000);
+        }
+
+        // 画面タップで案内を再表示
+        window.addEventListener('click', () => {
+            const uiLayer = document.getElementById('ui-layer');
+            if (uiLayer.style.display === 'block') {
+                uiLayer.classList.remove('hide');
+                setTimeout(() => uiLayer.classList.add('hide'), 3000);
+            }
+        });
+    </script>
+</body>
+</html>
